@@ -2,9 +2,9 @@ import cv2
 import numpy as np
 
 
-min_area = 0
+min_area = 5
 max_area = 300
-threshold = 254
+threshold = 250
 
 
 params = cv2.SimpleBlobDetector_Params()

@@ -12,15 +12,12 @@ import graphics
 
 
 min_dist = 10
-num_guess = 5
+num_guess = 10
 
 objp = np.array([[ 0.   , 0.   , 0.   ],
-                 [ 0.041, 0.   , 0.   ],
-                 [ 0.   , 0.052, 0.   ],
-                 [ 0.041, 0.052, 0.   ]])
-objp[:,2] =-objp[:,0]
-objp[:,0] = objp[:,1]
-objp[:,1] = 0.
+                 [ 0.049, 0.   , 0.   ],
+                 [ 0.049, 0.049, 0.   ],
+                 [ 0.   , 0.098, 0.   ]])
 
 
 def order(keyp, rvec, tvec, cmat, dist):
