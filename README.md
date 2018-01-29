@@ -75,9 +75,9 @@ def detect(img):
 	imgp = []
 	for y, x in np.ndindex(*thresh.shape):
 		if thresh[y, x]:
-			center, area, _ = floodfill(thresh, x, y)
+			center, area = floodfill(thresh, x, y)
 
-			if min_area < area < max_area:
+			if min_area <= area <= max_area:
 				imgp.append(center)
 
 	return np.array(imgp)
@@ -112,7 +112,7 @@ def floodfill(img, x, y):
 		stack.append([x+1, y])
 
 	center /= area
-	return center, area, rect
+	return center, area
 ```
 
 Embora o novo algoritmo apresente bom funcionamento em termos de encontrar os marcadores dentro da imagem, ele tem péssima performace por ser realizado em Python puro. Por isso, uma segunda versão precisou ser desenvolvida fazendo uso em parte da biblioteca OpenCV. A função `findContours` substitui o loop da versão anterior e encontra todos os conjuntos contíguos:
@@ -173,9 +173,9 @@ Nesta solução, a posição anterior dos marcadores é usada para encontrar a n
 def order(keyp, rvec, tvec, cmat, dist):
 	# Calcula a projeção dos marcadores na imagem anterior
 	imgp_last, _ = cv2.projectPoints(objp, rvec, tvec, cmat, dist)
-	imgp = []
 
 	# Encontra o ponto mais próximo para cada marcador
+	imgp = []
 	for p in imgp_last:
 		i = np.linalg.norm(keyp - p, axis=1).argmin()
 		q = keyp[i]
@@ -300,3 +300,4 @@ def solvepnp(objp, imgp, cmat, dist, rvec, tvec, flag):
 ## Dependências
 
 `Python3`, `numpy`, `opencv-python`, `pygame`, `PyOpenGL`, `pyassimp`
+

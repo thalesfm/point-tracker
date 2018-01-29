@@ -23,26 +23,12 @@ objp[:,0] = objp[:,1]
 objp[:,1] = 0.
 
 
-'''
-def order(keyp):
-	assert len(keyp) >= len(objp)
-
-	# keyp = sorted(keyp, key=lambda x: x.response)
-	keyp = keyp[:4]
-
-	imgp = [x.pt for x in keyp]
-	imgp.sort(key=lambda x: -x[1])
-	imgp[:2] = sorted(imgp[:2], key=lambda x: x[0])
-	imgp[2:] = sorted(imgp[2:], key=lambda x: x[0])
-
-	return np.array(imgp)
-'''
-
-
 def order(keyp, rvec, tvec, cmat, dist):
+	# Calcula a projeção dos marcadores na imagem anterior
 	imgp_last, _ = cv2.projectPoints(objp, rvec, tvec, cmat, dist)
-	imgp = []
 
+	# Encontra o ponto mais próximo para cada marcador
+	imgp = []
 	for p in imgp_last:
 		i = np.linalg.norm(keyp - p, axis=1).argmin()
 		q = keyp[i]
@@ -61,6 +47,7 @@ def valid(imgp):
 
 
 def track(img, cmat, dist, rvec, tvec, flag):
+	# Encontra a posição de todos os pontos
 	keyp = detect(img)
 
 	for p in keyp:
@@ -70,18 +57,21 @@ def track(img, cmat, dist, rvec, tvec, flag):
 	if len(keyp) < len(objp):
 		return False, img, rvec, tvec
 
-	imgp = []
+	imgps = []
 
+	# Utilizar solução anterior caso exista
 	if flag:
-		p = order(keyp, rvec, tvec, cmat, dist)
-		imgp.append(p)
+		imgp = order(keyp, rvec, tvec, cmat, dist)
+		imgps.append(imgp)
 
+	# Também escolher `num_guess` associações aleatórias
 	for _ in range(num_guess):
 		i = np.random.choice(len(keyp), len(objp))
-		p = keyp[i]
-		imgp.append(p)
+		imgp = keyp[i]
+		imgps.append(imgp)
 
-	imgp = [p for p in imgp if valid(p)]
+	# Descarta associações inválidas (contêm pontos muito próximos)
+	imgps = [p for p in imgps if valid(p)]
 
 	for p in imgp:
 		ret, rv, tv = solvepnp(objp, p, cmat, dist, rvec, tvec, flag)
@@ -153,3 +143,4 @@ def main():
 
 if __name__ == '__main__':
 	main()
+

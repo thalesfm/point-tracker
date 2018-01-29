@@ -16,16 +16,13 @@ for fname in images:
     img = cv2.imread(fname)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-
     ret, corners = cv2.findChessboardCorners(gray, (7,7), None)
-
 
     if ret:
         objpoints.append(objp)
 
         corners = cv2.cornerSubPix(gray, corners, (11,11), (-1,-1), criteria)
         imgpoints.append(corners)
-
 
         cv2.drawChessboardCorners(img, (7,7), corners, ret)
         cv2.imshow('img', img)
@@ -39,3 +36,4 @@ if ret:
 print('done.' if retval else 'failed.')
 
 cv2.destroyAllWindows()
+
