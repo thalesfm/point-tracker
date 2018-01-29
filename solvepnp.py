@@ -1,0 +1,48 @@
+import cv2
+import numpy as np
+
+
+rtol = 3e-3
+damping = 1e3
+
+
+default_rvec = np.array([ 0., 0., 0.])
+default_tvec = np.array([ 0., 0., 1.])
+
+
+def solvepnp_opencv(objp, imgp, cmat, dist, rvec, tvec, flag):
+	ret, rvec, tvec = cv2.solvePnP(objp, imgp, cmat, dist, rvec, tvec, flag)
+	return ret, rvec, tvec
+
+
+def solvepnp_python(objp, imgp, cmat, dist, rvec, tvec, flag):
+	imgp = imgp.flatten()
+
+	if flag:
+		vecs = np.concatenate((rvec, tvec))
+	else:
+		vecs = np.concatenate((default_rvec, default_tvec))
+
+	for i in range(30):
+		rvec, tvec = vecs[:3], vecs[3:]
+
+		p, jac = cv2.projectPoints(objp, rvec, tvec, cmat, dist)
+		p, jac = p.flatten(), jac[:,:6]
+
+		rloss = np.linalg.norm(imgp - p) / np.linalg.norm(imgp)
+		if rloss < rtol:
+			print(i+1, 'iters')
+			return True, rvec, tvec
+
+		a = jac.T.dot(jac) + damping * np.eye(6)
+		b = jac.T.dot(imgp - p)
+
+		try:
+			dvec = np.linalg.solve(a, b)
+			vecs += dvec
+		except:
+			rvec[:] = default_rvec + np.pi * np.random.rand(3)
+			tvec[:] = default_tvec + np.random.randn(3)
+
+	return False, rvec, tvec
+
